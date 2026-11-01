@@ -32,11 +32,24 @@ Cluster details: `env/cluster.md`.
 ## 2. Tokenizer and encoding (cpu partition)
 
 ```bash
-# TODO
+sbatch slurm/tokenize.sbatch      # needs data/clean/ from step 1
 ```
 
-- BPE vocabulary size: ~8,000, trained on training texts only
-- Outputs: `data/tokenized/train.bin`, `data/tokenized/val.bin`, tiny test subset
+Equivalent manual commands (inside a job, never on the login node):
+
+```bash
+module load pytorch/2.8.0
+pip install --user tokenizers
+python3 src/train_tokenizer.py --vocab_size 8192
+python3 src/encode.py --tiny_tokens 1500000
+python3 src/test_roundtrip.py
+```
+
+- BPE vocabulary: 8,192, byte-level, trained on the training texts only; EOT id 0
+- Outputs: `data/tokenized/train.bin` (4,761,128 tokens), `val.bin` (518,383),
+  `tiny.bin` (1,500,000), `meta.json`, `tokenizer.json`
+- Deterministic: reruns produce byte-identical files (SHA-256 in `meta.json`)
+- Tested with tokenizers 0.23.3, numpy 2.4.4
 
 ## 3. CPU smoke test
 
